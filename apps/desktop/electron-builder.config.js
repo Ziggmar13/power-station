@@ -7,14 +7,15 @@ const config = {
     output: 'release',
     buildResources: 'assets',
   },
-  files: ['dist/**/*'],
+  files: ['out/**/*', 'package.json'],
   extraFiles: [
     { from: '.env', to: '.env' },
     { from: 'assets', to: 'assets' },
   ],
   win: {
     target: [{ target: 'nsis', arch: ['x64'] }],
-    icon: 'assets/icon-connected.ico',
+    // icon and signAndEditExecutable disabled for dev builds — re-enable with real .ico + code signing cert for release
+    signAndEditExecutable: false,
     requestedExecutionLevel: 'asInvoker',
   },
   nsis: {
