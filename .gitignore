@@ -1,0 +1,9 @@
+node_modules/
+.next/
+dist/
+release/
+*.env
+*.env.local
+!*.env.example
+!*.env.local.example
+.turbo/
