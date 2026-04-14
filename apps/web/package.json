@@ -8,7 +8,6 @@
     "start": "next start"
   },
   "dependencies": {
-    "@power-station/types": "workspace:*",
     "@supabase/ssr": "^0.10.2",
     "@supabase/supabase-js": "^2.103.0",
     "alexa-verifier": "^4.0.0",

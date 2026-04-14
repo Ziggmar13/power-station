@@ -4,7 +4,7 @@ import { useState, type FormEvent } from 'react'
 import { useRouter } from 'next/navigation'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
-import type { Computer, CreateComputerInput, UpdateComputerInput } from '@power-station/types'
+import type { Computer, CreateComputerInput, UpdateComputerInput } from '@/types'
 
 interface ComputerFormProps {
   computer?: Computer

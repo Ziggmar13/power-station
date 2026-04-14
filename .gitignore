@@ -8,3 +8,5 @@ release/
 !*.env.example
 !*.env.local.example
 .turbo/
+
+.vercel

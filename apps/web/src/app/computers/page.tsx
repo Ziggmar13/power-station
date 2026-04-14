@@ -1,6 +1,6 @@
 import { createServerClient } from '@/services/supabase-server'
 import { ComputerForm } from '@/components/features/computer-form'
-import type { Computer } from '@power-station/types'
+import type { Computer } from '@/types'
 
 export const dynamic = 'force-dynamic'
 

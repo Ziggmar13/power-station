@@ -1,6 +1,6 @@
 import { createServerClient } from '@/services/supabase-server'
 import { successResponse, errorResponse } from '@/utils/api-response'
-import type { CreateComputerInput } from '@power-station/types'
+import type { CreateComputerInput } from '@/types'
 
 export const dynamic = 'force-dynamic'
 

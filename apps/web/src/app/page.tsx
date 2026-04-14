@@ -2,7 +2,7 @@ import Link from 'next/link'
 import { createServerClient } from '@/services/supabase-server'
 import { ComputerCard } from '@/components/features/computer-card'
 import { Button } from '@/components/ui/button'
-import type { Computer } from '@power-station/types'
+import type { Computer } from '@/types'
 
 export const dynamic = 'force-dynamic'
 

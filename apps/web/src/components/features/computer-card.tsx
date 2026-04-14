@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { AgentStatusBadge } from './agent-status-badge'
-import type { Computer } from '@power-station/types'
+import type { Computer } from '@/types'
 
 interface ComputerCardProps {
   computer: Computer
