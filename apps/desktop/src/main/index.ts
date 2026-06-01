@@ -1,4 +1,4 @@
-import { app, BrowserWindow } from 'electron'
+import { app, BrowserWindow, dialog } from 'electron'
 import path from 'path'
 import dotenv from 'dotenv'
 import { logger } from '../utils/logger'
@@ -6,9 +6,11 @@ import { createTray } from './tray'
 import { startRealtimeClient } from './realtime-client'
 import { enableAutoLaunch } from './autolaunch'
 
-// Load .env from the directory next to the executable (or project root in dev)
-dotenv.config({ path: path.join(process.resourcesPath ?? app.getAppPath(), '.env') })
-dotenv.config() // fallback for dev (loads from cwd)
+const envPath = app.isPackaged
+  ? path.join(path.dirname(process.execPath), '.env')
+  : path.join(__dirname, '../../.env')
+dotenv.config({ path: envPath })
+dotenv.config()
 
 const {
   SUPABASE_URL,
@@ -17,46 +19,47 @@ const {
   APP_URL = 'https://your-app.vercel.app',
 } = process.env
 
-function validateEnv(): void {
+function validateEnv(): boolean {
   const missing = ['SUPABASE_URL', 'SUPABASE_SERVICE_KEY', 'COMPUTER_ID'].filter(
     (key) => !process.env[key],
   )
   if (missing.length > 0) {
-    logger.error(`Missing environment variables: ${missing.join(', ')}`)
-    logger.error(
-      'Please set these in the .env file next to the application executable.',
-    )
+    const message = `Missing environment variables: ${missing.join(', ')}\n\nExpected .env at:\n${envPath}\n\nPlease create it with SUPABASE_URL, SUPABASE_SERVICE_KEY, and COMPUTER_ID.`
+    logger.error(message)
+    dialog.showErrorBox('Power Station — Configuration Error', message)
     app.quit()
+    return false
   }
+  return true
 }
 
 app.whenReady().then(async () => {
-  // Prevent creating a dock icon on macOS (no-op on Windows)
   app.dock?.hide()
 
-  validateEnv()
-
+  if (!validateEnv()) return
   if (!SUPABASE_URL || !SUPABASE_SERVICE_KEY || !COMPUTER_ID) return
 
   createTray('Loading...')
-  await enableAutoLaunch()
+
+  try {
+    await enableAutoLaunch()
+  } catch (err) {
+    logger.error('Failed to enable auto-launch:', err)
+  }
 
   try {
     await startRealtimeClient(SUPABASE_URL, SUPABASE_SERVICE_KEY, COMPUTER_ID, APP_URL)
   } catch (err) {
     logger.error('Failed to start realtime client:', err)
-    // Don't quit — tray icon still visible for troubleshooting
   }
 })
 
-// Prevent quitting when all windows are closed (tray app behaviour)
 app.on('window-all-closed', () => {
-  // Do nothing — keep alive as tray app
+  // Tray-only app — stay alive when no windows are open
 })
 
-// Required to prevent Electron from opening a window on macOS when dock icon clicked
 app.on('activate', () => {
   if (BrowserWindow.getAllWindows().length === 0) {
-    // No window to restore — this is intentional for a tray-only app
+    // Tray-only app — nothing to restore
   }
 })

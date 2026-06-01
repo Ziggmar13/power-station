@@ -73,27 +73,37 @@ export async function handleAlexaRequest(
 
   if (intentName === INTENTS.TURN_ON || intentName === INTENTS.TURN_OFF) {
     const action = intentName === INTENTS.TURN_ON ? 'wake' : 'shutdown'
-    const computerNameSlot = slots?.ComputerName?.value?.toLowerCase()
+    const rawSlot = slots?.ComputerName?.value?.toLowerCase().trim()
+    const FILLER_PHRASES = new Set(['my pc', 'my computer', 'my machine', 'pc', 'computer', 'machine'])
+    const computerNameSlot = rawSlot && !FILLER_PHRASES.has(rawSlot) ? rawSlot : undefined
 
     const supabase = createServerClient()
 
-    // Find matching computer by name, or fall back to first one
-    let query = supabase.from('computers').select('id, name')
+    let computer: { id: string; name: string } | null = null
+
     if (computerNameSlot) {
-      query = query.ilike('name', `%${computerNameSlot}%`)
+      const { data } = await supabase
+        .from('computers')
+        .select('id, name')
+        .ilike('name', `%${computerNameSlot}%`)
+        .limit(1)
+      computer = data?.[0] ?? null
     }
 
-    const { data: computers, error } = await query.limit(1)
+    if (!computer) {
+      const { data } = await supabase
+        .from('computers')
+        .select('id, name')
+        .order('created_at', { ascending: true })
+        .limit(1)
+      computer = data?.[0] ?? null
+    }
 
-    if (error || !computers || computers.length === 0) {
+    if (!computer) {
       return buildSpeechResponse(
-        computerNameSlot
-          ? `I could not find a computer named ${computerNameSlot}. Please add it in the Power Station dashboard first.`
-          : 'No computers are registered. Please add one in the Power Station dashboard first.',
+        'No computers are registered. Please add one in the Power Station dashboard first.',
       )
     }
-
-    const computer = computers[0]
 
     const { error: cmdError } = await supabase.from('commands').insert({
       computer_id: computer.id,

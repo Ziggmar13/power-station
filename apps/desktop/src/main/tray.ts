@@ -6,8 +6,10 @@ let tray: Tray | null = null
 
 function getIconPath(connected: boolean): string {
   const iconFile = connected ? 'icon-connected.ico' : 'icon-disconnected.ico'
-  // In packaged app, __dirname resolves inside asar. Use app.getAppPath() for assets.
-  return path.join(app.getAppPath(), 'assets', iconFile)
+  const baseDir = app.isPackaged
+    ? path.dirname(process.execPath)
+    : path.join(__dirname, '../..')
+  return path.join(baseDir, 'assets', iconFile)
 }
 
 export function createTray(computerName: string): Tray {
